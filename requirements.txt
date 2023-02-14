@@ -1,3 +1,4 @@
-pandas
-pymysql
+pandas~=1.5.3
+pymysql~=1.0.2
 openpyxl
+tqdm~=4.64.1

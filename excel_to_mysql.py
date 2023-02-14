@@ -1,5 +1,4 @@
 import string
-import time
 
 import pandas as pd
 import pymysql
@@ -20,15 +19,15 @@ class ExcelToMySql:
         self.insert_sql = None
 
     def load_execl(self):
-        sheet_name = str(input("사용할 sheet 이름을 입력하시오 (없을 경우 Enter, 첫번째 sheet가 사용됩니다) : "))
+        sheet_name = str(input("사용할 sheet 이름을 입력하시오\n (없을 경우 Enter, 첫번째 sheet가 사용됩니다) : "))
         if sheet_name == "":
             df = pd.read_excel(excel_path + file_name)
         else:
             df = pd.read_excel(excel_path + file_name, sheet_name=sheet_name)
-        print(f"첫 열 줄 \n{df.head(10)}")
+        print(f"첫 열 행 출력 \n{df.head(10)}")
         header = int(input("컬럼명으로 사용할 행의 번호를 입력하시오 : ")) + 1
         df = pd.read_excel(excel_path + file_name, header=header)
-        print(f"첫 열 줄 \n{df.head(10)}")
+        print(f"첫 열 행 출력 \n{df.head(10)}")
         df = df.where((pd.notnull(df)), None)
         ls = []
         for i in range(len(df)):
@@ -39,9 +38,10 @@ class ExcelToMySql:
                     ls.append(str(type(y)))
                 break
         for i in ls:
-            i = i.replace("<class 'pandas._libs.tslibs.timestamps.Timestamp'>", "datetime")
+            i = i.replace("<class 'pandas._libs.tslibs.timestamps.Timestamp'>", "date")
             i = i.replace("<class 'str'>", "varchar(100)")
             i = i.replace("<class 'float'>", "float")
+            i = i.replace("<class 'int'>", "int")
             self.type_ls.append(i)
         self.df = df
 
@@ -60,7 +60,8 @@ class ExcelToMySql:
                    f'primary key (id))'
         print(f"테이블 생성 쿼리 : \n{mk_table_sql}")
         self.mk_table_sql = mk_table_sql
-        insert_sql = f'insert into {file_name.split(".")[0]} ({", ".join(s for s in columns)}) values({("%s," * len(columns)).strip(",")})'
+        insert_sql = f'insert into {file_name.split(".")[0]} ({", ".join(s for s in columns)}) ' \
+                     f'values({("%s," * len(columns)).strip(",")})'
         print(f"데이터 입력 쿼리 : \n{insert_sql}")
         self.insert_sql = insert_sql
         self.columns = columns
